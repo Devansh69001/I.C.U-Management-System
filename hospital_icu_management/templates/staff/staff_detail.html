@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Staff Detail - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h3>
+                        <i class="bi bi-person-badge"></i>
+                        Staff Profile: {{ staff.user.get_full_name }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>ID:</th>
+                            <td>{{ staff.employee_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Role:</th>
+                            <td>{{ staff.role|title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Department:</th>
+                            <td>{{ staff.department|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Specialization:</th>
+                            <td>{{ staff.specialization|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone:</th>
+                            <td>{{ staff.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ staff.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if staff.availability_status %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Joined:</th>
+                            <td>{{ staff.date_joined|date:"d M Y, H:i" }}</td>
+                        </tr>
+                    </table>
+                    <div class="mt-3">
+                        <a href="{% url 'staff_update' staff.pk %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil"></i> Edit Staff
+                        </a>
+                        <a href="{% url 'staff_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

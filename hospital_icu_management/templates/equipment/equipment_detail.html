@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipment Detail - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-tools"></i> {{ equipment.equipment_name }}
+            </h1>
+            <p class="text-muted">Equipment ID: {{ equipment.equipment_id }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'equipment_update' equipment.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'equipment_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Equipment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Equipment ID:</strong></p>
+                            <p>{{ equipment.equipment_id }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Name:</strong></p>
+                            <p>{{ equipment.equipment_name }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Type:</strong></p>
+                            <p><span class="badge bg-info">{{ equipment.equipment_type }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Location:</strong></p>
+                            <p>{{ equipment.location }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-muted mb-1"><strong>Status:</strong></p>
+                            <p>
+                                {% if equipment.status == 'available' %}
+                                    <span class="badge bg-success" style="font-size: 1rem;">Available</span>
+                                {% elif equipment.status == 'in-use' %}
+                                    <span class="badge bg-info" style="font-size: 1rem;">In Use</span>
+                                {% elif equipment.status == 'maintenance' %}
+                                    <span class="badge bg-warning" style="font-size: 1rem;">Maintenance</span>
+                                {% else %}
+                                    <span class="badge bg-danger" style="font-size: 1rem;">Broken</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Maintenance Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Purchase Date:</strong></p>
+                            <p>{{ equipment.purchase_date|date:"d M Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Warranty Expiry:</strong></p>
+                            <p>
+                                {% if equipment.warranty_expiry %}
+                                    {{ equipment.warranty_expiry|date:"d M Y" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Last Maintenance:</strong></p>
+                            <p>
+                                {% if equipment.last_maintenance_date %}
+                                    {{ equipment.last_maintenance_date|date:"d M Y" }}
+                                {% else %}
+                                    <span class="text-muted">Never</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1"><strong>Next Maintenance:</strong></p>
+                            <p>
+                                {% if equipment.next_maintenance_date %}
+                                    <span class="badge bg-secondary">{{ equipment.next_maintenance_date|date:"d M Y" }}</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if equipment.notes %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Additional Notes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ equipment.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'equipment_update' equipment.pk %}" class="btn btn-warning d-block mb-2">
+                        <i class="fas fa-edit"></i> Edit Equipment
+                    </a>
+                    <a href="{% url 'equipment_list' %}" class="btn btn-secondary d-block">
+                        <i class="fas fa-list"></i> View All Equipment
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Created:</strong><br>
+                        <small class="text-muted">{{ equipment.created_at|date:"d M Y H:i" }}</small>
+                    </p>
+                    <p>
+                        <strong>Last Updated:</strong><br>
+                        <small class="text-muted">{{ equipment.updated_at|date:"d M Y H:i" }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

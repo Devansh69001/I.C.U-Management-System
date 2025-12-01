@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Patient Reports - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-file-earmark-bar-graph"></i> Patient Vital Reports</h2>
+    <p class="text-muted">View admitted patients and their vital trends</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Admitted Patients</h5>
+    </div>
+    <div class="card-body">
+        {% if patients %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient Name</th>
+                        <th>Age</th>
+                        <th>Status</th>
+                        <th>Room</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td>#{{ patient.id }}</td>
+                        <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                        <td>{{ patient.age|default:"-" }}</td>
+                        <td>
+                            {% if patient.status|lower == 'critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                            {% elif patient.status|lower == 'admitted' %}
+                                <span class="badge bg-warning">Admitted</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ patient.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ patient.room_number|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'patient_vitals_detail' patient.id %}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-graph-up"></i> View Vitals
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-5">No admitted patients found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

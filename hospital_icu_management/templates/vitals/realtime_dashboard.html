@@ -1,0 +1,1017 @@
+{% extends 'base.html' %}
+{% block title %}ICU Real-Time Monitoring System{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --icu-bg: #0a0e27;
+        --icu-panel: #1a1f3a;
+        --icu-border: #2a3f5f;
+        --icu-text: #e0e0e0;
+        --icu-critical: #ff1744;
+        --icu-warning: #ff9800;
+        --icu-normal: #4caf50;
+        --icu-info: #2196f3;
+    }
+
+    body {
+        background: var(--icu-bg);
+        color: var(--icu-text);
+        font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    }
+
+    .icu-container {
+        background: var(--icu-bg);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .icu-header {
+        background: linear-gradient(135deg, #1a1f3a 0%, #2a3f5f 100%);
+        border: 2px solid var(--icu-border);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .icu-header h1 {
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0;
+        font-size: 28px;
+    }
+
+    .icu-status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    .icu-status-indicator.active {
+        background: var(--icu-normal);
+        box-shadow: 0 0 10px var(--icu-normal);
+    }
+
+    .icu-status-indicator.inactive {
+        background: var(--icu-critical);
+        box-shadow: 0 0 10px var(--icu-critical);
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .patient-monitor-card {
+        background: var(--icu-panel);
+        border: 2px solid var(--icu-border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .patient-monitor-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--icu-normal);
+        transition: background 0.3s;
+    }
+
+    .patient-monitor-card.critical::before {
+        background: var(--icu-critical);
+        animation: criticalPulse 1s infinite;
+    }
+
+    .patient-monitor-card.warning::before {
+        background: var(--icu-warning);
+    }
+
+    @keyframes criticalPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    .patient-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--icu-border);
+    }
+
+    .patient-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .patient-room {
+        font-size: 14px;
+        color: var(--icu-text);
+        opacity: 0.7;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .vital-card {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--icu-border);
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .vital-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .vital-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--icu-text);
+        opacity: 0.7;
+        margin-bottom: 8px;
+    }
+
+    .vital-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #fff;
+        font-family: 'Courier New', monospace;
+        margin: 10px 0;
+    }
+
+    .vital-unit {
+        font-size: 14px;
+        color: var(--icu-text);
+        opacity: 0.6;
+    }
+
+    .vital-card.normal {
+        border-color: var(--icu-normal);
+        box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .vital-card.warning {
+        border-color: var(--icu-warning);
+        box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+        animation: warningBlink 2s infinite;
+    }
+
+    .vital-card.critical {
+        border-color: var(--icu-critical);
+        box-shadow: 0 0 15px rgba(255, 23, 68, 0.5);
+        animation: criticalBlink 1s infinite;
+    }
+
+    @keyframes warningBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    @keyframes criticalBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .chart-container {
+        background: rgba(0, 0, 0, 0.4);
+        border: 2px solid var(--icu-border);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+
+    .chart-title {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--icu-text);
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    .control-panel {
+        background: var(--icu-panel);
+        border: 2px solid var(--icu-border);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .icu-btn {
+        background: var(--icu-border);
+        border: 2px solid var(--icu-border);
+        color: var(--icu-text);
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s;
+        margin: 5px;
+    }
+
+    .icu-btn:hover {
+        background: var(--icu-info);
+        border-color: var(--icu-info);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    .icu-btn.active {
+        background: var(--icu-normal);
+        border-color: var(--icu-normal);
+    }
+
+    .icu-btn.danger {
+        background: var(--icu-critical);
+        border-color: var(--icu-critical);
+    }
+
+    .last-update {
+        font-size: 11px;
+        color: var(--icu-text);
+        opacity: 0.5;
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--icu-text);
+        opacity: 0.6;
+    }
+
+    .patient-selector {
+        background: var(--icu-panel);
+        border: 2px solid var(--icu-border);
+        border-radius: 8px;
+        padding: 12px;
+        color: var(--icu-text);
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .grid-view {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .grid-view {
+            grid-template-columns: 1fr;
+        }
+        .vitals-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="icu-container">
+    <!-- ICU Header -->
+    <div class="icu-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-heart-pulse-fill"></i> ICU Real-Time Monitoring System</h1>
+                <p class="mb-0" style="color: var(--icu-text); opacity: 0.7; margin-top: 5px;">
+                    Live Patient Vital Signs Monitoring
+                </p>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="icu-status-indicator active" id="connection-indicator"></span>
+                <span id="connection-text" style="color: var(--icu-text); font-weight: 600;">SYSTEM ONLINE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <select id="patient-select" class="patient-selector" onchange="loadPatientVitals(this.value)">
+                    <option value="">All Patients - Multi-Monitor View</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }} - Room {{ patient.room_number|default:"N/A" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-8 text-end">
+                <button class="icu-btn" id="auto-generate-btn" onclick="toggleAutoGenerate()">
+                    <i class="bi bi-play-circle"></i> <span id="auto-generate-text">START AUTO-GENERATE</span>
+                </button>
+                <button class="icu-btn" onclick="generateVitalsForAll()">
+                    <i class="bi bi-plus-circle"></i> GENERATE NOW
+                </button>
+                <button class="icu-btn" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> REFRESH
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Patients Multi-Monitor View -->
+    <div id="all-patients-view" class="grid-view">
+        {% for patient in patients %}
+        <div class="patient-monitor-card" id="monitor-card-{{ patient.id }}" data-patient-id="{{ patient.id }}">
+            <div class="patient-header">
+                <div>
+                    <div class="patient-name">{{ patient.first_name }} {{ patient.last_name }}</div>
+                    <div class="patient-room">Room: {{ patient.room_number|default:"N/A" }}</div>
+                </div>
+                <span class="status-badge bg-secondary" id="status-badge-{{ patient.id }}">
+                    {{ patient.status|default:"MONITORING"|upper }}
+                </span>
+            </div>
+
+            <div class="vitals-grid">
+                <div class="vital-card normal" id="vital-bp-{{ patient.id }}">
+                    <div class="vital-label">Blood Pressure</div>
+                    <div class="vital-value" id="bp-{{ patient.id }}">--/--</div>
+                    <div class="vital-unit">mmHg</div>
+                </div>
+                <div class="vital-card normal" id="vital-spo2-{{ patient.id }}">
+                    <div class="vital-label">Oxygen Saturation</div>
+                    <div class="vital-value" id="spo2-{{ patient.id }}">--</div>
+                    <div class="vital-unit">SpO2 %</div>
+                </div>
+                <div class="vital-card normal" id="vital-hr-{{ patient.id }}">
+                    <div class="vital-label">Heart Rate</div>
+                    <div class="vital-value" id="hr-{{ patient.id }}">--</div>
+                    <div class="vital-unit">BPM</div>
+                </div>
+                <div class="vital-card normal" id="vital-temp-{{ patient.id }}">
+                    <div class="vital-label">Temperature</div>
+                    <div class="vital-value" id="temp-{{ patient.id }}">--</div>
+                    <div class="vital-unit">°C</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Heart Rate Trend</div>
+                <canvas id="mini-chart-{{ patient.id }}" height="120"></canvas>
+            </div>
+
+            <div class="last-update" id="last-update-{{ patient.id }}">Last Update: --</div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 20px;"></i>
+            <h3>No Patients in Monitoring</h3>
+            <p>No admitted patients found. Please add patients to the system.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Single Patient Detailed View -->
+    <div id="single-patient-view" style="display: none;">
+        <div class="patient-monitor-card" style="margin-bottom: 20px;">
+            <div class="patient-header">
+                <div>
+                    <div class="patient-name" id="selected-patient-name">Patient Name</div>
+                    <div class="patient-room" id="selected-patient-info">Room: N/A | Status: N/A</div>
+                </div>
+                <button class="icu-btn" onclick="showAllPatients()">
+                    <i class="bi bi-arrow-left"></i> BACK TO ALL
+                </button>
+            </div>
+
+            <div class="vitals-grid">
+                <div class="vital-card" id="detailed-vital-bp">
+                    <div class="vital-label">Blood Pressure</div>
+                    <div class="vital-value" id="detailed-bp" style="font-size: 48px;">--/--</div>
+                    <div class="vital-unit">mmHg</div>
+                </div>
+                <div class="vital-card" id="detailed-vital-spo2">
+                    <div class="vital-label">Oxygen Saturation</div>
+                    <div class="vital-value" id="detailed-spo2" style="font-size: 48px;">--</div>
+                    <div class="vital-unit">SpO2 %</div>
+                </div>
+                <div class="vital-card" id="detailed-vital-hr">
+                    <div class="vital-label">Heart Rate</div>
+                    <div class="vital-value" id="detailed-hr" style="font-size: 48px;">--</div>
+                    <div class="vital-unit">BPM</div>
+                </div>
+                <div class="vital-card" id="detailed-vital-temp">
+                    <div class="vital-label">Temperature</div>
+                    <div class="vital-value" id="detailed-temp" style="font-size: 48px;">--</div>
+                    <div class="vital-unit">°C</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <div class="chart-title">Blood Pressure Trend</div>
+                    <canvas id="detailed-bp-chart" height="200"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <div class="chart-title">Oxygen Saturation (SpO2)</div>
+                    <canvas id="detailed-spo2-chart" height="200"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <div class="chart-title">Heart Rate (ECG Style)</div>
+                    <canvas id="detailed-hr-chart" height="200"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <div class="chart-title">Temperature Trend</div>
+                    <canvas id="detailed-temp-chart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Global variables
+let updateInterval;
+let generateInterval;
+let patientCharts = {};
+let detailedCharts = {};
+let currentPatientId = null;
+let autoGenerateEnabled = false;
+
+// Chart.js configuration for medical monitors
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.color = '#e0e0e0';
+Chart.defaults.borderColor = '#2a3f5f';
+
+// Medical value ranges for color coding
+const VITAL_RANGES = {
+    bp_systolic: { normal: [90, 140], warning: [80, 90, 140, 160], critical: [0, 80, 160, 300] },
+    bp_diastolic: { normal: [60, 90], warning: [50, 60, 90, 100], critical: [0, 50, 100, 300] },
+    spo2: { normal: [95, 100], warning: [90, 95], critical: [0, 90] },
+    hr: { normal: [60, 100], warning: [50, 60, 100, 120], critical: [0, 50, 120, 300] },
+    temp: { normal: [36.1, 37.2], warning: [35.0, 36.1, 37.2, 38.0], critical: [0, 35.0, 38.0, 50] }
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    generateInitialVitals();
+    setTimeout(() => {
+        loadAllPatientsVitals();
+        updateInterval = setInterval(loadAllPatientsVitals, 3000);
+    }, 1000);
+});
+
+// Generate initial vitals
+async function generateInitialVitals() {
+    try {
+        console.log('Generating initial vitals...');
+        for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await generateVitalsForAll();
+        }
+        console.log('Initial vitals generation complete');
+    } catch (error) {
+        console.error('Error generating initial vitals:', error);
+    }
+}
+
+// Load vitals for all patients
+async function loadAllPatientsVitals() {
+    try {
+        const response = await fetch('/vitals/api/vitals/');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        
+        console.log('Loaded vitals data:', data); // Debug log
+        
+        if (data.patients && data.patients.length > 0) {
+            console.log(`Updating ${data.patients.length} patients`);
+            data.patients.forEach(patientData => {
+                console.log(`Updating patient ${patientData.patient_id}:`, patientData);
+                updatePatientMonitor(patientData);
+            });
+        } else {
+            console.log('No patients data received from API');
+        }
+        
+        updateConnectionStatus(true);
+    } catch (error) {
+        console.error('Error loading vitals:', error);
+        updateConnectionStatus(false);
+    }
+}
+
+// Update patient monitor with color coding
+function updatePatientMonitor(patientData) {
+    const patientId = patientData.patient_id;
+    const monitorCard = document.getElementById(`monitor-card-${patientId}`);
+    if (!monitorCard) {
+        console.warn(`Monitor card not found for patient ${patientId}`);
+        return;
+    }
+
+    const latest = patientData.latest || {};
+    let hasCritical = false;
+    let hasWarning = false;
+
+    // Update Blood Pressure
+    const bpElement = document.getElementById(`bp-${patientId}`);
+    const bpCard = document.getElementById(`vital-bp-${patientId}`);
+    if (bpElement && bpCard) {
+        if (latest.blood_pressure_systolic && latest.blood_pressure_diastolic) {
+            bpElement.textContent = `${latest.blood_pressure_systolic}/${latest.blood_pressure_diastolic}`;
+            const status = getVitalStatus('bp_systolic', latest.blood_pressure_systolic);
+            updateVitalCard(bpCard, status);
+            if (status === 'critical') hasCritical = true;
+            if (status === 'warning') hasWarning = true;
+        } else {
+            bpElement.textContent = '--/--';
+            updateVitalCard(bpCard, 'normal');
+        }
+    }
+
+    // Update SpO2
+    const spo2Element = document.getElementById(`spo2-${patientId}`);
+    const spo2Card = document.getElementById(`vital-spo2-${patientId}`);
+    if (spo2Element && spo2Card) {
+        if (latest.oxygen_saturation !== null && latest.oxygen_saturation !== undefined) {
+            spo2Element.textContent = latest.oxygen_saturation;
+            const status = getVitalStatus('spo2', latest.oxygen_saturation);
+            updateVitalCard(spo2Card, status);
+            if (status === 'critical') hasCritical = true;
+            if (status === 'warning') hasWarning = true;
+        } else {
+            spo2Element.textContent = '--';
+            updateVitalCard(spo2Card, 'normal');
+        }
+    }
+
+    // Update Heart Rate
+    const hrElement = document.getElementById(`hr-${patientId}`);
+    const hrCard = document.getElementById(`vital-hr-${patientId}`);
+    if (hrElement && hrCard) {
+        if (latest.heart_rate !== null && latest.heart_rate !== undefined) {
+            hrElement.textContent = latest.heart_rate;
+            const status = getVitalStatus('hr', latest.heart_rate);
+            updateVitalCard(hrCard, status);
+            if (status === 'critical') hasCritical = true;
+            if (status === 'warning') hasWarning = true;
+        } else {
+            hrElement.textContent = '--';
+            updateVitalCard(hrCard, 'normal');
+        }
+    }
+
+    // Update Temperature
+    const tempElement = document.getElementById(`temp-${patientId}`);
+    const tempCard = document.getElementById(`vital-temp-${patientId}`);
+    if (tempElement && tempCard) {
+        if (latest.temperature !== null && latest.temperature !== undefined) {
+            tempElement.textContent = latest.temperature.toFixed(1);
+            const status = getVitalStatus('temp', latest.temperature);
+            updateVitalCard(tempCard, status);
+            if (status === 'critical') hasCritical = true;
+            if (status === 'warning') hasWarning = true;
+        } else {
+            tempElement.textContent = '--';
+            updateVitalCard(tempCard, 'normal');
+        }
+    }
+
+    // Update monitor card status
+    monitorCard.classList.remove('critical', 'warning');
+    if (hasCritical) {
+        monitorCard.classList.add('critical');
+    } else if (hasWarning) {
+        monitorCard.classList.add('warning');
+    }
+
+    // Update last update time
+    const lastUpdateElement = document.getElementById(`last-update-${patientId}`);
+    if (lastUpdateElement) {
+        if (latest.timestamp) {
+            lastUpdateElement.textContent = `Last Update: ${latest.timestamp}`;
+        } else {
+            lastUpdateElement.textContent = `Last Update: No data`;
+        }
+    }
+
+    // Update chart
+    updateMiniChart(patientId, patientData);
+}
+
+// Get vital status based on medical ranges
+function getVitalStatus(type, value) {
+    const ranges = VITAL_RANGES[type];
+    if (!ranges || value === null || value === undefined) return 'normal';
+
+    if (type === 'bp_systolic' || type === 'bp_diastolic') {
+        if (value < ranges.critical[1] || value > ranges.critical[2]) return 'critical';
+        if (value < ranges.warning[0] || value > ranges.warning[2]) return 'warning';
+        if (value >= ranges.normal[0] && value <= ranges.normal[1]) return 'normal';
+    } else if (type === 'spo2') {
+        if (value < ranges.critical[1]) return 'critical';
+        if (value < ranges.warning[1]) return 'warning';
+        if (value >= ranges.normal[0]) return 'normal';
+    } else if (type === 'hr') {
+        if (value < ranges.critical[1] || value > ranges.critical[2]) return 'critical';
+        if (value < ranges.warning[0] || value > ranges.warning[2]) return 'warning';
+        if (value >= ranges.normal[0] && value <= ranges.normal[1]) return 'normal';
+    } else if (type === 'temp') {
+        if (value < ranges.critical[1] || value > ranges.critical[2]) return 'critical';
+        if (value < ranges.warning[0] || value > ranges.warning[2]) return 'warning';
+        if (value >= ranges.normal[0] && value <= ranges.normal[1]) return 'normal';
+    }
+
+    return 'normal';
+}
+
+// Update vital card styling
+function updateVitalCard(card, status) {
+    if (!card) return;
+    card.classList.remove('normal', 'warning', 'critical');
+    card.classList.add(status);
+}
+
+// Update mini chart
+function updateMiniChart(patientId, patientData) {
+    const canvasId = `mini-chart-${patientId}`;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const labels = patientData.timestamps || [];
+    const heartRateData = patientData.heart_rate || [];
+
+    if (labels.length === 0 || heartRateData.length === 0) {
+        if (!patientCharts[patientId]) {
+            patientCharts[patientId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['No data'],
+                    datasets: [{
+                        label: 'Heart Rate',
+                        data: [0],
+                        borderColor: '#2a3f5f',
+                        backgroundColor: 'rgba(42, 63, 95, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#2a3f5f' }, ticks: { color: '#e0e0e0' } },
+                        x: { display: false }
+                    }
+                }
+            });
+        }
+        return;
+    }
+
+    if (patientCharts[patientId]) {
+        const chart = patientCharts[patientId];
+        const limitedLabels = labels.length > 20 ? labels.slice(-20) : labels;
+        const limitedData = heartRateData.length > 20 ? heartRateData.slice(-20) : heartRateData;
+        chart.data.labels = limitedLabels;
+        chart.data.datasets[0].data = limitedData;
+        chart.data.datasets[0].borderColor = '#ff1744';
+        chart.data.datasets[0].backgroundColor = 'rgba(255, 23, 68, 0.1)';
+        chart.update('none');
+    } else {
+        patientCharts[patientId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.slice(-20),
+                datasets: [{
+                    label: 'Heart Rate',
+                    data: heartRateData.slice(-20),
+                    borderColor: '#ff1744',
+                    backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                    tension: 0.4,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: '#2a3f5f' }, ticks: { color: '#e0e0e0' } },
+                    x: { grid: { color: '#2a3f5f' }, ticks: { color: '#e0e0e0', maxTicksLimit: 5 } }
+                }
+            }
+        });
+    }
+}
+
+// Load patient vitals for detailed view
+async function loadPatientVitals(patientId) {
+    if (!patientId) {
+        showAllPatients();
+        return;
+    }
+    
+    currentPatientId = patientId;
+    try {
+        const response = await fetch(`/vitals/api/vitals/${patientId}/`);
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        showSinglePatientView(data);
+        updateDetailedCharts(data);
+        
+        clearInterval(updateInterval);
+        updateInterval = setInterval(() => {
+            loadPatientVitals(patientId);
+            if (autoGenerateEnabled) {
+                generateVitalsForPatient(patientId);
+            }
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error loading patient vitals:', error);
+        updateConnectionStatus(false);
+    }
+}
+
+// Show single patient view
+function showSinglePatientView(patientData) {
+    document.getElementById('all-patients-view').style.display = 'none';
+    document.getElementById('single-patient-view').style.display = 'block';
+    
+    document.getElementById('selected-patient-name').textContent = patientData.patient_name;
+    document.getElementById('selected-patient-info').textContent = 
+        `Room: ${patientData.room_number || 'N/A'} | Status: ${patientData.status || 'N/A'}`;
+    
+    if (patientData.latest) {
+        const latest = patientData.latest;
+        
+        if (latest.blood_pressure_systolic && latest.blood_pressure_diastolic) {
+            document.getElementById('detailed-bp').textContent = 
+                `${latest.blood_pressure_systolic}/${latest.blood_pressure_diastolic}`;
+            updateVitalCard(document.getElementById('detailed-vital-bp'), 
+                getVitalStatus('bp_systolic', latest.blood_pressure_systolic));
+        }
+        
+        if (latest.oxygen_saturation) {
+            document.getElementById('detailed-spo2').textContent = latest.oxygen_saturation;
+            updateVitalCard(document.getElementById('detailed-vital-spo2'), 
+                getVitalStatus('spo2', latest.oxygen_saturation));
+        }
+        
+        if (latest.heart_rate) {
+            document.getElementById('detailed-hr').textContent = latest.heart_rate;
+            updateVitalCard(document.getElementById('detailed-vital-hr'), 
+                getVitalStatus('hr', latest.heart_rate));
+        }
+        
+        if (latest.temperature) {
+            document.getElementById('detailed-temp').textContent = latest.temperature.toFixed(1);
+            updateVitalCard(document.getElementById('detailed-vital-temp'), 
+                getVitalStatus('temp', latest.temperature));
+        }
+    }
+}
+
+// Update detailed charts
+function updateDetailedCharts(patientData) {
+    const labels = patientData.timestamps || [];
+    const medicalChartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { labels: { color: '#e0e0e0' } } },
+        scales: {
+            y: { grid: { color: '#2a3f5f' }, ticks: { color: '#e0e0e0' } },
+            x: { grid: { color: '#2a3f5f' }, ticks: { color: '#e0e0e0' } }
+        }
+    };
+
+    updateChartSmoothly('detailed-bp-chart', {
+        labels: labels,
+        datasets: [{
+            label: 'Systolic',
+            data: patientData.blood_pressure_systolic || [],
+            borderColor: '#ff1744',
+            tension: 0.4
+        }, {
+            label: 'Diastolic',
+            data: patientData.blood_pressure_diastolic || [],
+            borderColor: '#2196f3',
+            tension: 0.4
+        }]
+    }, medicalChartOptions);
+
+    updateChartSmoothly('detailed-spo2-chart', {
+        labels: labels,
+        datasets: [{
+            label: 'SpO2 (%)',
+            data: patientData.oxygen_saturation || [],
+            borderColor: '#4caf50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    }, { ...medicalChartOptions, scales: { ...medicalChartOptions.scales, y: { ...medicalChartOptions.scales.y, min: 85, max: 100 } } });
+
+    updateChartSmoothly('detailed-hr-chart', {
+        labels: labels,
+        datasets: [{
+            label: 'Heart Rate (BPM)',
+            data: patientData.heart_rate || [],
+            borderColor: '#ff9800',
+            tension: 0.4
+        }]
+    }, medicalChartOptions);
+
+    updateChartSmoothly('detailed-temp-chart', {
+        labels: labels,
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: patientData.temperature || [],
+            borderColor: '#9c27b0',
+            tension: 0.4
+        }]
+    }, { ...medicalChartOptions, scales: { ...medicalChartOptions.scales, y: { ...medicalChartOptions.scales.y, min: 35, max: 42 } } });
+}
+
+// Update chart smoothly
+function updateChartSmoothly(canvasId, chartData, options = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const maxPoints = 30;
+    const labels = chartData.labels || [];
+    const limitedLabels = labels.length > maxPoints ? labels.slice(-maxPoints) : labels;
+
+    if (detailedCharts[canvasId]) {
+        const chart = detailedCharts[canvasId];
+        chart.data.labels = limitedLabels;
+        chartData.datasets.forEach((dataset, index) => {
+            if (chart.data.datasets[index]) {
+                const data = dataset.data || [];
+                chart.data.datasets[index].data = data.length > maxPoints ? data.slice(-maxPoints) : data;
+            } else {
+                chart.data.datasets.push(dataset);
+            }
+        });
+        chart.update('none');
+    } else {
+        const limitedDatasets = chartData.datasets.map(dataset => ({
+            ...dataset,
+            data: (dataset.data || []).length > maxPoints ? dataset.data.slice(-maxPoints) : dataset.data
+        }));
+        detailedCharts[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: { labels: limitedLabels, datasets: limitedDatasets },
+            options: options
+        });
+    }
+}
+
+// Show all patients
+function showAllPatients() {
+    document.getElementById('all-patients-view').style.display = 'grid';
+    document.getElementById('single-patient-view').style.display = 'none';
+    document.getElementById('patient-select').value = '';
+    currentPatientId = null;
+    
+    clearInterval(updateInterval);
+    updateInterval = setInterval(() => {
+        loadAllPatientsVitals();
+        if (autoGenerateEnabled) {
+            generateVitalsForAll();
+        }
+    }, 3000);
+    loadAllPatientsVitals();
+}
+
+// Update connection status
+function updateConnectionStatus(connected) {
+    const indicator = document.getElementById('connection-indicator');
+    const text = document.getElementById('connection-text');
+    if (connected) {
+        indicator.className = 'icu-status-indicator active';
+        text.textContent = 'SYSTEM ONLINE';
+        text.style.color = '#4caf50';
+    } else {
+        indicator.className = 'icu-status-indicator inactive';
+        text.textContent = 'SYSTEM OFFLINE';
+        text.style.color = '#ff1744';
+    }
+}
+
+// Generate vitals functions
+async function generateVitalsForAll() {
+    try {
+        const response = await fetch('/vitals/api/generate/');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        if (data.readings && data.readings.length > 0) {
+            setTimeout(loadAllPatientsVitals, 500);
+            if (currentPatientId) {
+                setTimeout(() => loadPatientVitals(currentPatientId), 500);
+            }
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error generating vitals:', error);
+        return false;
+    }
+}
+
+async function generateVitalsForPatient(patientId) {
+    try {
+        const response = await fetch(`/vitals/api/generate/${patientId}/`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        if (data.vital) {
+            if (currentPatientId === patientId) {
+                setTimeout(() => loadPatientVitals(patientId), 500);
+            } else {
+                setTimeout(loadAllPatientsVitals, 500);
+            }
+        }
+    } catch (error) {
+        console.error('Error generating vitals:', error);
+    }
+}
+
+// Toggle auto-generation
+function toggleAutoGenerate() {
+    autoGenerateEnabled = !autoGenerateEnabled;
+    const btn = document.getElementById('auto-generate-btn');
+    const text = document.getElementById('auto-generate-text');
+    
+    if (autoGenerateEnabled) {
+        btn.classList.add('danger', 'active');
+        text.innerHTML = '<i class="bi bi-stop-circle"></i> STOP AUTO-GENERATE';
+        generateInterval = setInterval(generateVitalsForAll, 4000);
+    } else {
+        btn.classList.remove('danger', 'active');
+        text.innerHTML = '<i class="bi bi-play-circle"></i> START AUTO-GENERATE';
+        if (generateInterval) {
+            clearInterval(generateInterval);
+        }
+    }
+}
+
+// Cleanup
+window.addEventListener('beforeunload', function() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (generateInterval) clearInterval(generateInterval);
+});
+</script>
+{% endblock %}

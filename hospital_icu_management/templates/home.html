@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Total Patients</h6>
+                        <h2>{{ total_patients }}</h2>
+                    </div>
+                    <i class="bi bi-people" style="font-size: 3rem; color: var(--primary-color);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Active Staff</h6>
+                        <h2>{{ active_staff }}</h2>
+                    </div>
+                    <i class="bi bi-person-badge" style="font-size: 3rem; color: var(--success-color);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">ICU Occupied</h6>
+                        <h2>{{ icu_occupied }}</h2>
+                    </div>
+                    <i class="bi bi-hospital" style="font-size: 3rem; color: var(--warning-color);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted">Critical Cases</h6>
+                        <h2>{{ critical_cases }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: var(--danger-color);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Recent Admissions</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Room</th>
+                                <th>Status</th>
+                                <th>Admitted</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for admission in recent_admissions %}
+                            <tr>
+                                <td>{{ admission.patient.first_name }} {{ admission.patient.last_name }}</td>
+                                <td>{{ admission.room_assignment }}</td>
+                                <td>
+                                    <span class="badge bg-warning">{{ admission.admission_type }}</span>
+                                </td>
+                                <td>{{ admission.admission_date_time|date:"M d, H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'patient_detail' admission.patient.id %}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No recent admissions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-bell"></i> Alerts</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for alert in alerts %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ alert.title }}</h6>
+                            <small class="text-danger">{{ alert.priority }}</small>
+                        </div>
+                        <p class="mb-1">{{ alert.message }}</p>
+                        <small class="text-muted">{{ alert.created_at|timesince }} ago</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted py-3">No alerts</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'patient_create' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Add Patient
+                    </a>
+                    <a href="{% url 'nurse:admission_create' %}" class="btn btn-outline-success">
+                        <i class="bi bi-door-open"></i> New Admission
+                    </a>
+                    <a href="{% url 'prescription_create' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-capsule"></i> Add Prescription
+                    </a>
+                    <a href="{% url 'report_list' %}" class="btn btn-outline-info">
+                        <i class="bi bi-file-earmark-bar-graph"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Treatment Plans - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-clipboard-list"></i> Treatment Plans
+            </h1>
+            <p class="text-muted">Doctor's treatment plans for patients</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'treatment_plan_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Plan
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="alert alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% if treatment_plans %}
+            {% for plan in treatment_plans %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100 treatment-card">
+                    <div class="card-header {% if plan.priority == 'Urgent' %}bg-danger{% elif plan.priority == 'High' %}bg-warning{% else %}bg-info{% endif %} text-white">
+                        <h5 class="mb-0">{{ plan.treatment_type }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Patient:</strong></p>
+                            <p class="text-muted">{{ plan.patient.first_name }} {{ plan.patient.last_name }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Doctor:</strong></p>
+                            <p class="text-muted">{{ plan.doctor.user.get_full_name }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Priority:</strong></p>
+                            <span class="badge {% if plan.priority == 'Urgent' %}bg-danger{% elif plan.priority == 'High' %}bg-warning{% else %}bg-secondary{% endif %}">{{ plan.priority }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Status:</strong></p>
+                            <span class="badge {% if plan.status == 'active' %}bg-success{% elif plan.status == 'completed' %}bg-info{% else %}bg-warning{% endif %}">{{ plan.get_status_display }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Start Date:</strong></p>
+                            <p class="text-muted">{{ plan.start_date|date:"d M Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <a href="{% url 'treatment_plan_detail' plan.pk %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'treatment_plan_update' plan.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="p-5 text-center">
+                <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                <p class="text-muted mt-3">No treatment plans found</p>
+                <a href="{% url 'treatment_plan_create' %}" class="btn btn-primary mt-3">
+                    Create First Plan
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

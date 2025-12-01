@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Treatment Plan Details - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Treatment Plan Details</h2>
+  <div class="card">
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Patient:</b> {{ treatment_plan.patient }}</li>
+        <li class="list-group-item"><b>Doctor:</b> {{ treatment_plan.doctor }}</li>
+        <li class="list-group-item"><b>Diagnosis:</b> {{ treatment_plan.diagnosis }}</li>
+        <li class="list-group-item"><b>Plan:</b> {{ treatment_plan.plan }}</li>
+        <li class="list-group-item"><b>Start Date:</b> {{ treatment_plan.start_date }}</li>
+        <li class="list-group-item"><b>End Date:</b> {{ treatment_plan.end_date }}</li>
+        <li class="list-group-item"><b>Notes:</b> {{ treatment_plan.notes }}</li>
+      </ul>
+      <a href="{% url 'treatment_plan_list' %}" class="btn btn-secondary mt-3">Back to Treatment Plans</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

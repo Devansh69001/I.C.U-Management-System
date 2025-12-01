@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Prescription Details - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Prescription Details</h2>
+  <div class="card">
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Patient:</b> {{ prescription.patient }}</li>
+        <li class="list-group-item"><b>Doctor:</b> {{ prescription.doctor }}</li>
+        <li class="list-group-item"><b>Medicine:</b> {{ prescription.medicine }}</li>
+        <li class="list-group-item"><b>Dosage:</b> {{ prescription.dosage }}</li>
+        <li class="list-group-item"><b>Frequency:</b> {{ prescription.frequency }}</li>
+        <li class="list-group-item"><b>Duration:</b> {{ prescription.duration }}</li>
+        <li class="list-group-item"><b>Date:</b> {{ prescription.date }}</li>
+        <li class="list-group-item"><b>Instructions:</b> {{ prescription.instructions }}</li>
+      </ul>
+      <a href="{% url 'prescription_list' %}" class="btn btn-secondary mt-3">Back to Prescriptions</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

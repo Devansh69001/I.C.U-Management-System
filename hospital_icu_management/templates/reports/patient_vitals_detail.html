@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient.first_name }} {{ patient.last_name }} - Vitals{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="bi bi-activity"></i> Patient Vital Signs</h2>
+            <p class="text-muted mb-0">{{ patient.first_name }} {{ patient.last_name }} (ID: #{{ patient.id }})</p>
+        </div>
+        <a href="{% url 'report_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3"><strong>Status:</strong> 
+                        <span class="badge {% if patient.status|lower == 'critical' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ patient.status }}
+                        </span>
+                    </div>
+                    <div class="col-md-3"><strong>Room:</strong> {{ patient.room_number|default:"-" }}</div>
+                    <div class="col-md-3"><strong>Age:</strong> {{ patient.age|default:"-" }}</div>
+                    <div class="col-md-3"><strong>Readings:</strong> {{ vitals_count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Blood Pressure Trend</h5></div>
+            <div class="card-body">
+                <canvas id="bpChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Oxygen Saturation (SpO2)</h5></div>
+            <div class="card-body">
+                <canvas id="oxygenChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Heart Rate (BPM)</h5></div>
+            <div class="card-body">
+                <canvas id="heartRateChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Temperature (°C)</h5></div>
+            <div class="card-body">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const timestamps = {{ timestamps|safe }};
+const bpSystolic = {{ bp_systolic|safe }};
+const bpDiastolic = {{ bp_diastolic|safe }};
+const oxygen = {{ oxygen|safe }};
+const heartRate = {{ heart_rate|safe }};
+const temperature = {{ temperature|safe }};
+
+// Blood Pressure Chart
+new Chart(document.getElementById('bpChart'), {
+    type: 'line',
+    data: {
+        labels: timestamps,
+        datasets: [{
+            label: 'Systolic',
+            data: bpSystolic,
+            borderColor: 'rgb(220, 53, 69)',
+            tension: 0.1
+        }, {
+            label: 'Diastolic',
+            data: bpDiastolic,
+            borderColor: 'rgb(13, 110, 253)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: false } }
+    }
+});
+
+// Oxygen Chart
+new Chart(document.getElementById('oxygenChart'), {
+    type: 'line',
+    data: {
+        labels: timestamps,
+        datasets: [{
+            label: 'SpO2 (%)',
+            data: oxygen,
+            borderColor: 'rgb(25, 135, 84)',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            fill: true,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { min: 85, max: 100 } }
+    }
+});
+
+// Heart Rate Chart
+new Chart(document.getElementById('heartRateChart'), {
+    type: 'line',
+    data: {
+        labels: timestamps,
+        datasets: [{
+            label: 'BPM',
+            data: heartRate,
+            borderColor: 'rgb(255, 193, 7)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: false } }
+    }
+});
+
+// Temperature Chart
+new Chart(document.getElementById('temperatureChart'), {
+    type: 'line',
+    data: {
+        labels: timestamps,
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: temperature,
+            borderColor: 'rgb(111, 66, 193)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { min: 35, max: 42 } }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Admissions - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-door-open"></i> Patient Admissions</h2>
+        <a href="{% url 'nurse:admission_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Admission
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Nurse</th>
+                        <th>Type</th>
+                        <th>Room</th>
+                        <th>Chief Complaint</th>
+                        <th>Admission Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admission in admissions %}
+                    <tr>
+                        <td>#{{ admission.id }}</td>
+                        <td>{{ admission.patient.first_name }} {{ admission.patient.last_name }}</td>
+                        <td>{{ admission.nurse.user.get_full_name }}</td>
+                        <td><span class="badge bg-info">{{ admission.admission_type }}</span></td>
+                        <td>{{ admission.room_assignment }}</td>
+                        <td>{{ admission.chief_complaint|truncatewords:5 }}</td>
+                        <td>{{ admission.admission_date_time|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'nurse:admission_detail' admission.id %}" class="btn btn-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'nurse:admission_update' admission.id %}" class="btn btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No admissions found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

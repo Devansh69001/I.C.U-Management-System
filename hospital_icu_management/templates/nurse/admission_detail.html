@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Admission Details - Hospital ICU Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">Admission Details</h2>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Patient: {{ admission.patient.first_name }} {{ admission.patient.last_name }}</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Admission ID:</b> {{ admission.id }}</li>
+        <li class="list-group-item"><b>Admission Date:</b> {{ admission.admission_date }}</li>
+        <li class="list-group-item"><b>Bed/Ward:</b> {{ admission.bed_number }}</li>
+        <li class="list-group-item"><b>Status:</b> {{ admission.status }}</li>
+      </ul>
+      <h6 class="mt-4">Patient Information</h6>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Gender:</b> {{ admission.patient.get_gender_display }}</li>
+        <li class="list-group-item"><b>DOB:</b> {{ admission.patient.date_of_birth }}</li>
+        <li class="list-group-item"><b>Contact:</b> {{ admission.patient.phone_number }}</li>
+        <li class="list-group-item"><b>Blood Type:</b> {{ admission.patient.blood_type }}</li>
+      </ul>
+      <!-- Add more details or vitals as needed -->
+    </div>
+  </div>
+  <a href="{% url 'nurse:admissions_list' %}" class="btn btn-secondary mt-3">Back to Admissions List</a>
+</div>
+{% endblock %}

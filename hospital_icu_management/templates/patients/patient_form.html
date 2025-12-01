@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Patient{% else %}Add New Patient{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>
+        <i class="bi bi-person-plus"></i> 
+        {% if object %}Edit Patient{% else %}Add New Patient{% endif %}
+    </h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h5 class="mb-3">Personal Information</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_first_name" class="form-label">First Name *</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="text-danger">{{ form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_last_name" class="form-label">Last Name *</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="text-danger">{{ form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                     <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_gender" class="form-label">Gender *</label>
+                    {{ form.gender }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_blood_group" class="form-label">Blood Group *</label>
+                    {{ form.blood_group }}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_phone" class="form-label">Phone Number *</label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    {{ form.email }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_address" class="form-label">Address *</label>
+                {{ form.address }}
+            </div>
+            
+            <hr class="my-4">
+            
+            <h5 class="mb-3">Emergency Contact</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="id_emergency_contact_name" class="form-label">Contact Name *</label>
+                    {{ form.emergency_contact_name }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_emergency_contact_relationship" class="form-label">Relationship *</label>
+                    {{ form.emergency_contact_relationship }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_emergency_contact_phone" class="form-label">Contact Phone *</label>
+                    {{ form.emergency_contact_phone }}
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <h5 class="mb-3">Medical Information</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_status" class="form-label">Status *</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_room_number" class="form-label">Room Number</label>
+                    {{ form.room_number }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_medical_history" class="form-label">Medical History</label>
+                {{ form.medical_history }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_allergies" class="form-label">Allergies</label>
+                {{ form.allergies }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_current_medications" class="form-label">Current Medications</label>
+                {{ form.current_medications }}
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'patient_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Save Patient
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
